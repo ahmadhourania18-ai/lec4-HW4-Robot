@@ -1,4 +1,4 @@
-﻿#include <iostream>
+#include <iostream>
 #include <cmath>
 #define GLEW_STATIC
 #include <GL/glew.h>
@@ -63,6 +63,18 @@ void getMouseNDC(GLFWwindow* window, float& x, float& y)
     glfwGetCursorPos(window, &xpos, &ypos); //جيب موقع الماوس بالبكسل.
     x = (2.0f * xpos) / SCR_WIDTH - 1.0f;
     y = 1.0f - (2.0f * ypos) / SCR_HEIGHT;
+}
+
+
+
+void drawPupil(float eyeX, float mouseX, float mouseY, float EYE_Y,
+    int offsetLoc, int scaleLoc)
+{
+    float dx = (mouseX - eyeX) * 0.1f;  // PUPIL_MOVE_FACTOR
+    float dy = (mouseY - EYE_Y) * 0.1f;
+    glUniform2f(offsetLoc, eyeX + dx, EYE_Y + dy);
+    glUniform2f(scaleLoc, 0.1f, 0.1f);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }
 
 // ===================== MAIN =====================
@@ -183,20 +195,12 @@ int main()
         glUniform2f(offsetLoc, RIGHT_EYE_X, EYE_Y);
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-        // ===================== 3. البؤبؤ =====================
+       // ===================== 3. البؤبؤ =====================
         if (blink > 0.1f) // فقط إذا العين مفتوحة
         {
             glUniform3f(colorLoc, 0.0f, 0.0f, 0.0f); // لون البؤبؤ أسود
-            auto drawPupil = [&](float eyeX)
-                {
-                    float dx = (mouseX - eyeX) * PUPIL_MOVE_FACTOR;
-                    float dy = (mouseY - EYE_Y) * PUPIL_MOVE_FACTOR;
-                    glUniform2f(offsetLoc, eyeX + dx, EYE_Y + dy);
-                    glUniform2f(scaleLoc, 0.1f, 0.1f);
-                    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-                };
-            drawPupil(LEFT_EYE_X);
-            drawPupil(RIGHT_EYE_X);
+            drawPupil(LEFT_EYE_X, mouseX, mouseY, EYE_Y, offsetLoc, scaleLoc);
+            drawPupil(RIGHT_EYE_X, mouseX, mouseY, EYE_Y, offsetLoc, scaleLoc);
         }
 
         // ===================== 4. الفم =====================
